@@ -1,7 +1,10 @@
 // Import modules
+import * as maptalks from 'maptalks';
 import * as THREE from 'three';
 import * as maptalksThree from 'maptalks.three';
-import { map } from './map.js';
+import { map } from './src/map.js';
+
+const LAZIO_GEOJSON_URL = './geoJson/lazio.geoJson';
 
 // PCD module
 import { PCDLoader } from 'three/addons/loaders/PCDLoader.js';
@@ -62,7 +65,30 @@ threeLayer.prepareToDraw = function (gl, scene, camera) {
         function (error) {
             console.log('An error happened');
             console.log(error);
-    });
+        });
 };
 
 threeLayer.addTo(map);
+
+
+fetch(LAZIO_GEOJSON_URL)
+    .then(response => response.json())
+    .then(data => {
+        const features = data.features;
+        console.log(features);
+        for (const feature of features) {
+
+            const geometry = maptalks.GeoJSON.toGeometry(feature);
+
+            if (geometry instanceof maptalks.Polygon) {
+                geometry.setSymbol({
+                    polygonFill: '#ff0000',
+                    polygonOpacity: 0.5,
+                    lineColor: '#ff0000',
+                    lineWidth: 1
+                });
+            }
+
+            geometry.addTo(map.getLayer('v'));
+        }
+    })
